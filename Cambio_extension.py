@@ -1,30 +1,26 @@
-import os
-import pandas as pd
 import streamlit as st
+import os
 from io import BytesIO
+from openpyxl import load_workbook
 
-def convertir_xlsm_a_xlsx(archivo):
-    """Convierte un archivo .xlsm a .xlsx sin macros"""
-    df = pd.read_excel(archivo, sheet_name=None)  # Cargar todas las hojas
+def cambiar_extension_xlsm_a_xlsx(archivo):
+    """Carga un archivo .xlsm y lo guarda como .xlsx sin modificar su estructura"""
     output = BytesIO()
-
-    with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        for hoja, contenido in df.items():
-            contenido.to_excel(writer, sheet_name=hoja, index=False)
-    
+    wb = load_workbook(archivo)  # Cargar el archivo manteniendo su estructura
+    wb.save(output)  # Guardarlo en memoria
     output.seek(0)
     return output
 
 # Interfaz de Streamlit
-st.title("Convertidor de archivos XLSM a XLSX")
-st.write("Carga uno o varios archivos `.xlsm` y conviértelos a `.xlsx`.")
+st.title("Convertidor de XLSM a XLSX (sin modificar el archivo)")
+st.write("Carga archivos `.xlsm` y simplemente cámbiales la extensión a `.xlsx`.")
 
 archivos_subidos = st.file_uploader("Selecciona archivos", type=["xlsm"], accept_multiple_files=True)
 
 if archivos_subidos:
     for archivo in archivos_subidos:
         nombre_sin_ext = os.path.splitext(archivo.name)[0]
-        archivo_convertido = convertir_xlsm_a_xlsx(archivo)
+        archivo_convertido = cambiar_extension_xlsm_a_xlsx(archivo)
 
         st.download_button(
             label=f"Descargar {nombre_sin_ext}.xlsx",
